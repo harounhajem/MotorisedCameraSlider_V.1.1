@@ -736,7 +736,7 @@ int NavigateReadJoystick(int menu_length)
 void ManualDrive()
 {
 	valueJoyX = analogRead(joyX);
-
+	//XXX
 	valueJoyY = analogRead(joyY);
 
 
