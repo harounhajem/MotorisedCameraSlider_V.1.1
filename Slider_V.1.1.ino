@@ -54,12 +54,12 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I
 
 #pragma endregion
 #pragma region Global Variables Declaration
-short int _stepPosition = 1;
-long maxStepPosition = 50000;
-short int minStepPosition = 0;
+short _stepPosition = 1;
+int maxStepPosition = 50000;
+short minStepPosition = 0;
 String lastMessage = "Last";
 long fastSpeed = 50000.0;
-int valueJoyX, valueJoyY;
+short valueJoyX, valueJoyY;
 short const
 buffer = 350;
 short const
@@ -72,7 +72,7 @@ long timerAcc;
 long timerMov;
 long timerReading;
 int accelerationValue = 900;
-int movement = 100;
+int movement = 500;
 short speedValue = 500;
 #pragma endregion
 
@@ -453,7 +453,7 @@ void AutoDriveComence()
 		delay(2500);
 		AutoDriveToPositionX(posA, 2000);
 
-	 }
+	}
 }
 void AutoDriveCheckAllowedLimitAcceleration() {
 	if (accelerationValue > 900)
@@ -735,23 +735,52 @@ int NavigateReadJoystick(int menu_length)
 // Manual Drive
 void ManualDrive()
 {
-	valueJoyX = analogRead(joyX);
-	//XXX
-	valueJoyY = analogRead(joyY);
+	stepper.setAcceleration(900);
+	stepper.setMaxSpeed(2000);
+	const int maxPos = 8050;
+	const int minPos = 0;
 
-
-	Reading_Acceleration(2, 1000, 11000, 50);
-	Reading_Movement();
-	StepperRun();
-
-
-	//!digitalRead(btnJoy)
-	if (digitalRead(btnBlue) ||
-		SmoothingBtnJoy() == 0)
+	do
 	{
-		return;
-	}
-	ManualDrive();
+		valueJoyX = analogRead(joyX);
+		valueJoyY = analogRead(joyY);
+		int currentPos = stepper.currentPosition();
+			if (valueJoyX > origoX + buffer)
+			{
+				if (currentPos - movement < minPos)
+				{
+					return;
+				}
+				stepper.moveTo(0);
+			}
+
+			//Increase value, not over max
+			if (valueJoyX < origoX - buffer)
+			{
+				/*if (currentPos + movement > maxPos)
+				{
+					return;
+				}*/
+
+				stepper.moveTo(8050);
+			}
+		//if (valueJoyX > origoX + buffer ||
+		//	valueJoyX < origoX - buffer)
+		//{
+
+
+		//	//Decrease value, not under min
+
+		//}
+		stepper.run();
+		//else
+		//{
+		//	stepper.stop();
+		//}
+
+	} while (SmoothingBtnJoy() != 0);
+
+
 }
 void Reading_Acceleration(int timer, int minAccu, int maxAccu, int addValue)
 {
