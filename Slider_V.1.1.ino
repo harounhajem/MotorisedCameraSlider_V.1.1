@@ -735,51 +735,68 @@ int NavigateReadJoystick(int menu_length)
 // Manual Drive
 void ManualDrive()
 {
-	stepper.setAcceleration(900);
-	stepper.setMaxSpeed(2000);
+	stepper.setAcceleration(850);
+	stepper.setMaxSpeed(1500);
+	stepper.setSpeed(1500);
 	const int maxPos = 8050;
 	const int minPos = 0;
-
+	const short movementStep = 188;
+	short newPos = stepper.currentPosition();;
+	//digitalWrite(enablePin, LOW);
 	do
 	{
 		valueJoyX = analogRead(joyX);
 		valueJoyY = analogRead(joyY);
 		int currentPos = stepper.currentPosition();
-			if (valueJoyX > origoX + buffer)
-			{
-				if (currentPos - movement < minPos)
-				{
-					return;
-				}
-				stepper.moveTo(0);
-			}
 
+		/*if (!stepper.isRunning())
+		{
+
+
+		}*/
+
+		
 			//Increase value, not over max
-			if (valueJoyX < origoX - buffer)
+			if (valueJoyX > origoX + buffer && currentPos + movementStep < maxPos)
 			{
-				/*if (currentPos + movement > maxPos)
-				{
-					return;
-				}*/
-
-				stepper.moveTo(8050);
+				newPos = currentPos + movementStep;
+				stepper.moveTo(newPos);
 			}
-		//if (valueJoyX > origoX + buffer ||
-		//	valueJoyX < origoX - buffer)
-		//{
+
+			if (valueJoyX < origoX - buffer &&  currentPos + movementStep > minPos)
+			{
+				newPos = currentPos - movementStep;
+				stepper.moveTo(newPos);
+			}
 
 
-		//	//Decrease value, not under min
 
-		//}
-		stepper.run();
-		//else
+		//if (valueJoyX >= origoX + 50 && valueJoyX <= origoX - 50)
 		//{
 		//	stepper.stop();
+
 		//}
 
-	} while (SmoothingBtnJoy() != 0);
+		//stepper.disableOutputs();
+		if (currentPos == newPos) //millis() - timer1 > 150UL && 
+		{
+			digitalWrite(enablePin, HIGH);
+		}
+		else
+		{
+			digitalWrite(enablePin, LOW);
+		}
+		stepper.runSpeedToPosition();
 
+		//if (currentPos < maxPos && currentPos > minPos) {
+		//	stepper.run();
+		//}
+
+
+	} while (SmoothingBtnJoy() != 0);
+	digitalWrite(enablePin, HIGH);
+
+	delay(500);
 
 }
 void Reading_Acceleration(int timer, int minAccu, int maxAccu, int addValue)
