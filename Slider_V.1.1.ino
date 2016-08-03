@@ -59,10 +59,10 @@ int maxStepPosition = 50000;
 short minStepPosition = 0;
 String lastMessage = "Last";
 long fastSpeed = 50000.0;
-short valueJoyX, valueJoyY;
-short const
+int valueJoyX, valueJoyY;
+int const
 buffer = 350;
-short const
+int const
 origoX = 499,
 origoY = 497;
 const short joyMenuDelay = 800;
@@ -737,11 +737,15 @@ void ManualDrive()
 {
 	stepper.setAcceleration(850);
 	stepper.setMaxSpeed(1500);
-	stepper.setSpeed(1500);
+	int labSpeedValue = 1500;
+	stepper.setSpeed(labSpeedValue);
 	const int maxPos = 8050;
 	const int minPos = 0;
-	const short movementStep = 188;
-	short newPos = stepper.currentPosition();;
+	const short increaseValStep = 188;
+	const int increaseValSpeed = 250;
+	short newPos = stepper.currentPosition();
+
+
 	//digitalWrite(enablePin, LOW);
 	do
 	{
@@ -755,29 +759,35 @@ void ManualDrive()
 
 		}*/
 
-		
-			//Increase value, not over max
-			if (valueJoyX > origoX + buffer && currentPos + movementStep < maxPos)
-			{
-				newPos = currentPos + movementStep;
-				stepper.moveTo(newPos);
-			}
 
-			if (valueJoyX < origoX - buffer &&  currentPos + movementStep > minPos)
-			{
-				newPos = currentPos - movementStep;
-				stepper.moveTo(newPos);
-			}
+		//Position
+		if (valueJoyX > origoX + buffer && currentPos + increaseValStep < maxPos)
+		{
+			newPos = currentPos + increaseValStep;
+			stepper.moveTo(newPos);
+		}
+
+		if (valueJoyX < origoX - buffer &&  currentPos + increaseValStep > minPos)
+		{
+			newPos = currentPos - increaseValStep;
+			stepper.moveTo(newPos);
+		}
+
+		const int maxxii = 50000;
+		//Speed
+		if (valueJoyY > origoY + buffer && labSpeedValue + increaseValSpeed < maxxii)
+		{
+			labSpeedValue += increaseValSpeed;
+			stepper.setSpeed(labSpeedValue);
+		}
+
+		if (valueJoyY < origoY - buffer && labSpeedValue - increaseValSpeed > (0- increaseValSpeed))
+		{
+			labSpeedValue -= increaseValSpeed;
+			stepper.setSpeed(labSpeedValue);
+		}
 
 
-
-		//if (valueJoyX >= origoX + 50 && valueJoyX <= origoX - 50)
-		//{
-		//	stepper.stop();
-
-		//}
-
-		//stepper.disableOutputs();
 		if (currentPos == newPos) //millis() - timer1 > 150UL && 
 		{
 			digitalWrite(enablePin, HIGH);
@@ -788,9 +798,6 @@ void ManualDrive()
 		}
 		stepper.runSpeedToPosition();
 
-		//if (currentPos < maxPos && currentPos > minPos) {
-		//	stepper.run();
-		//}
 
 
 	} while (SmoothingBtnJoy() != 0);
