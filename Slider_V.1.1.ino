@@ -736,16 +736,17 @@ int NavigateReadJoystick(int menu_length)
 void ManualDrive()
 {
 	stepper.setAcceleration(850);
-	stepper.setMaxSpeed(1500);
-	int labSpeedValue = 1500;
+	stepper.setMaxSpeed(50000);
+	long labSpeedValue = 5000;
 	stepper.setSpeed(labSpeedValue);
 	const int maxPos = 8050;
 	const int minPos = 0;
-	const short increaseValStep = 188;
-	const int increaseValSpeed = 250;
+	const short increaseValStep = 350;
+	const long increaseValSpeed = 250;
 	short newPos = stepper.currentPosition();
 
 
+	const long maxxii = 100000;
 	//digitalWrite(enablePin, LOW);
 	do
 	{
@@ -759,33 +760,42 @@ void ManualDrive()
 
 		}*/
 
-
-		//Position
-		if (valueJoyX > origoX + buffer && currentPos + increaseValStep < maxPos)
+		if (millis() - timerJoy > 10UL)
 		{
-			newPos = currentPos + increaseValStep;
-			stepper.moveTo(newPos);
+
+			//Position
+			if (valueJoyX > origoX + buffer && currentPos + increaseValStep < 8050)
+			{
+				newPos = currentPos + increaseValStep;
+				stepper.moveTo(newPos);
+				//stepper.runSpeedToPosition();
+
+			}
+
+			if (valueJoyX < origoX - buffer &&  currentPos - increaseValStep > 0)
+			{
+				newPos = currentPos - increaseValStep;
+				stepper.moveTo(newPos);
+				//stepper.runSpeedToPosition();
+
+			}
+			//Speed
+			if ((valueJoyY > (origoY + buffer)) && ((labSpeedValue + increaseValSpeed) < maxxii))
+			{
+				labSpeedValue += increaseValSpeed;
+				stepper.setSpeed(labSpeedValue);
+				stepper.runSpeedToPosition();
+			}
+
+			if ((valueJoyY < (origoY - buffer)) && ((labSpeedValue - increaseValSpeed) > (0 - increaseValSpeed)))
+			{
+				labSpeedValue -= increaseValSpeed;
+				stepper.setSpeed(labSpeedValue);
+				stepper.runSpeedToPosition();
+			}
+			timerJoy = millis();
 		}
 
-		if (valueJoyX < origoX - buffer &&  currentPos + increaseValStep > minPos)
-		{
-			newPos = currentPos - increaseValStep;
-			stepper.moveTo(newPos);
-		}
-
-		const int maxxii = 50000;
-		//Speed
-		if (valueJoyY > origoY + buffer && labSpeedValue + increaseValSpeed < maxxii)
-		{
-			labSpeedValue += increaseValSpeed;
-			stepper.setSpeed(labSpeedValue);
-		}
-
-		if (valueJoyY < origoY - buffer && labSpeedValue - increaseValSpeed > (0- increaseValSpeed))
-		{
-			labSpeedValue -= increaseValSpeed;
-			stepper.setSpeed(labSpeedValue);
-		}
 
 
 		if (currentPos == newPos) //millis() - timer1 > 150UL && 
