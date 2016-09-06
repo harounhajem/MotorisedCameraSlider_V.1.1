@@ -27,26 +27,26 @@
 
 
 #pragma region Pin Declaration
-#define btn_Blue 7
-#define btn_Green 8
+//#define btn_Blue 7
+//#define btn_Green 8
 //Buttons
-#define btnBlue A12 
-#define btnYellow A13
-#define btnBlack A14
-#define btnGreen A15
-#define btnCalibrationStop A8
+//#define btnBlue A12 
+//#define btnYellow A13
+//#define btnBlack A14
+//#define btnGreen A15
+//#define btnCalibrationStop A8
 #define btnJoy A0
 
 //Joystick
-#define joyX A10
-#define joyY A9
+#define joyX A1
+#define joyY A2
 
 
 
 //Stepper Motor
-#define stepPin 6
-#define dirPin 7
-#define enablePin 2
+#define stepPin 2
+#define dirPin 3
+#define enablePin 4
 AccelStepper stepper(1, stepPin, dirPin);
 #pragma endregion
 #pragma region LCD Declaration
@@ -78,22 +78,18 @@ short speedValue = 500;
 
 void setup()
 {
-	Serial.begin(115200);
+	Serial.begin(9600);
 
 
 	//pinMode()
-	pinMode(btnBlue, INPUT);
-	pinMode(btnYellow, INPUT);
-	pinMode(btnBlack, INPUT);
-	pinMode(btnGreen, INPUT);
-	pinMode(btnCalibrationStop, INPUT);
+	pinMode(btnJoy, INPUT);
 	pinMode(joyX, INPUT);
 	pinMode(joyY, INPUT);
 	pinMode(enablePin, OUTPUT);
 
 	//Stepper Setup
 	stepper.setMaxSpeed(2000);
-	stepper.setAcceleration(10000);
+	stepper.setAcceleration(3200);
 	stepper.setEnablePin(enablePin);
 	//Turn off stepper
 	digitalWrite(enablePin, HIGH);
@@ -102,8 +98,6 @@ void setup()
 
 }
 
-long timerTimeLapseMove2;
-short movementDelay2 = 1500;
 void loop()
 {
 	//ManualDrive();
@@ -160,10 +154,7 @@ void IntroWelcomeSequance()
 
 	do
 	{
-		if (digitalRead(btnBlue) ||
-			digitalRead(btnYellow) ||
-			digitalRead(btnBlack) ||
-			digitalRead(btnGreen) || SmoothingBtnJoy() == 0)
+		if (BtnJoyPush())
 		{
 			btnResponse = true;
 		}
@@ -190,58 +181,63 @@ void IntroWelcomeSequance()
 	lcd.clear();
 
 }
-void CallibrationSequance()
-{
-	lcd.clear();
-	lcd.setCursor(4, 1);
-	lcd.print("Calibrating");
-	lcd.blink();
-
-	// !!!
-	stepper.setAcceleration(2500);
-	stepper.setSpeed(500);
-	digitalWrite(enablePin, LOW);
-
-	// !!!
-	stepper.moveTo(stepper.currentPosition() - 50000);
-	while (!digitalRead(btnCalibrationStop)) {
-		/*	if (stepper.currentPosition()  == 50000)
-		{
-		stepper.moveTo()
-		}
-		stepper.run();*/
-
-		//TODO Utveckla en smooth stepper calibration movement.
-	}
 
 
-	MoveFromCalibrationButton();
-	stepper.setCurrentPosition(0);
-	lcd.setCursor(7, 2);
-	lcd.noBlink();
-	lcd.print("Done");
 
-	// !!!
-	stepper.setAcceleration(10000);
-	digitalWrite(enablePin, HIGH);
+//void CallibrationSequance()
+//{
+//	lcd.clear();
+//	lcd.setCursor(4, 1);
+//	lcd.print("Calibrating");
+//	lcd.blink();
+//
+//	// !!!
+//	stepper.setAcceleration(2500);
+//	stepper.setSpeed(500);
+//	digitalWrite(enablePin, LOW);
+//
+//	// !!!
+//	stepper.moveTo(stepper.currentPosition() - 50000);
+//	while (false) {
+//		/*	if (stepper.currentPosition()  == 50000)
+//		{
+//		stepper.moveTo()
+//		}
+//		stepper.run();*/
+//
+//		//TODO Utveckla en smooth stepper calibration movement.
+//	}
+//
+//
+//	MoveFromCalibrationButton();
+//	stepper.setCurrentPosition(0);
+//	lcd.setCursor(7, 2);
+//	lcd.noBlink();
+//	lcd.print("Done");
+//
+//	// !!!
+//	stepper.setAcceleration(10000);
+//	digitalWrite(enablePin, HIGH);
+//
+//
+//	delay(5000);
+//	lcd.clear();
+//
+//}
 
 
-	delay(5000);
-	lcd.clear();
-
-}
-void MoveFromCalibrationButton() {
-	const short calibrationBufferDistance = 100;
-	stepper.setAcceleration(8000);
-	digitalWrite(enablePin, LOW);
-	stepper.moveTo(stepper.currentPosition() + calibrationBufferDistance);
-	do
-	{
-		stepper.run();
-	} while (!digitalRead(btnCalibrationStop));
-	digitalWrite(enablePin, HIGH);
-
-}
+//void MoveFromCalibrationButton() {
+//	const short calibrationBufferDistance = 100;
+//	stepper.setAcceleration(8000);
+//	digitalWrite(enablePin, LOW);
+//	stepper.moveTo(stepper.currentPosition() + calibrationBufferDistance);
+//	do
+//	{
+//		stepper.run();
+//	} while (false);
+//	digitalWrite(enablePin, HIGH);
+//
+//}
 
 
 // Menu
@@ -314,7 +310,7 @@ void MenuAutoDrive()
 	{
 	case 0:
 		//	Drive
-		AutoDriveComence();
+		AutoDriveCommence();
 		break;
 
 	case 1:
@@ -364,7 +360,7 @@ void AutoDriveSetPosition()
 		Reading_Movement();
 		StepperRun();
 		posA = stepper.currentPosition();
-	} while (SmoothingBtnJoy() != 0);
+	} while (!BtnJoyPush());
 
 	delay(600);
 	PrintPosition("B", 1);
@@ -382,7 +378,7 @@ void AutoDriveSetPosition()
 		Reading_Movement();
 		StepperRun();
 		posB = stepper.currentPosition();
-	} while (SmoothingBtnJoy() != 0);
+	} while (!BtnJoyPush());
 	delay(600);
 }
 void AutoDriveSetSpeed()
@@ -405,13 +401,12 @@ void AutoDriveSetSpeed()
 		ReadingAndSettingSpeedValue(100, 100, 3600, 25);
 
 
-	} while (SmoothingBtnJoy() != 0);
+	} while (!BtnJoyPush());
 
 }
 void AutoDriveToPositionX(int position, int maxSpeed) {
 	stepper.setAcceleration(900);
 	stepper.setMaxSpeed(maxSpeed);
-
 	// Move to position
 	digitalWrite(enablePin, LOW);
 	if (stepper.currentPosition() != position)
@@ -425,12 +420,12 @@ void AutoDriveToPositionX(int position, int maxSpeed) {
 	} while (stepper.currentPosition() != position);
 	digitalWrite(enablePin, HIGH);
 }
-void AutoDriveComence()
+void AutoDriveCommence()
 {
 	if ((posA == 0 && posB == 0) ||
 		(posA == posB))
 	{
-		//Check if value is correct
+		//Check if value has correct setup
 		lcd.clear();
 		lcd.noBlink();
 		lcd.setCursor(0, 1);
@@ -453,7 +448,7 @@ void AutoDriveComence()
 		delay(2500);
 		AutoDriveToPositionX(posA, 2000);
 
-	 }
+	}
 }
 void AutoDriveCheckAllowedLimitAcceleration() {
 	if (accelerationValue > 900)
@@ -580,17 +575,30 @@ int average = 0;                // the average
 int val;
 long timerBtnJoy;
 #pragma endregion
+bool BtnJoyPush()
+{
+	int btnValue = analogRead(btnJoy);
+
+	if (btnValue == 0UL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 int SmoothingBtnJoy() {
 	if (millis() - timerBtnJoy > 1UL)
 	{
 
-		val = analogRead(A0);
+		val = analogRead(btnJoy);
 
 
 		////////////////////////////////////////
 		total = total - readings[readIndex];
 		// read from the sensor:
-		readings[readIndex] = analogRead(A0);
+		readings[readIndex] = analogRead(btnJoy);
 		// add the reading to the total:
 		total = total + readings[readIndex];
 		// advance to the next position in the array:
@@ -607,7 +615,8 @@ int SmoothingBtnJoy() {
 
 		//delay(1);        // delay in between reads for stability
 		timerBtnJoy = millis();
-		return average = total / numReadings;
+		int result = average = total / numReadings;
+		return result;
 	}
 	else
 	{
@@ -620,58 +629,60 @@ int SmoothingBtnJoy() {
 
 
 }
-int ButtonReadNavigate(int menu_length)
-{
-
-	//Go back
-	if (digitalRead(btnBlue))
-	{
-		delay(250);
-		return 10;
-	}
-
-	//Selection is made
-	if (digitalRead(btnGreen))
-	{
-
-		delay(250);
-		return cursorPos;
-	}
 
 
-	//Move up
-	if (digitalRead(btnYellow))
-	{
-		if (cursorPos - 1 >= 0)
-		{
-			cursorPos -= 1;
-
-		}
-
-	}
-
-
-	//Move down
-	if (digitalRead(btnBlack))
-	{
-		if (cursorPos + 1 < menu_length)
-		{
-			cursorPos += 1;
-
-		}
-
-	}
-
-	//Print out new selection on LCD
-	if (cursorPos != cursorLastPos)
-	{
-		lcd.setCursor(17, cursorPos);
-		cursorLastPos = cursorPos;
-		delay(btnPause);
-	}
-
-	ButtonReadNavigate(menu_length);
-}
+//int ButtonReadNavigate(int menu_length)
+//{
+//
+//	//Go back
+//	if (digitalRead(btnBlue))
+//	{
+//		delay(250);
+//		return 10;
+//	}
+//
+//	//Selection is made
+//	if (digitalRead(btnGreen))
+//	{
+//
+//		delay(250);
+//		return cursorPos;
+//	}
+//
+//
+//	//Move up
+//	if (digitalRead(btnYellow))
+//	{
+//		if (cursorPos - 1 >= 0)
+//		{
+//			cursorPos -= 1;
+//
+//		}
+//
+//	}
+//
+//
+//	//Move down
+//	if (digitalRead(btnBlack))
+//	{
+//		if (cursorPos + 1 < menu_length)
+//		{
+//			cursorPos += 1;
+//
+//		}
+//
+//	}
+//
+//	//Print out new selection on LCD
+//	if (cursorPos != cursorLastPos)
+//	{
+//		lcd.setCursor(17, cursorPos);
+//		cursorLastPos = cursorPos;
+//		delay(btnPause);
+//	}
+//
+//	ButtonReadNavigate(menu_length);
+//}
 int NavigateReadJoystick(int menu_length)
 {
 
@@ -685,7 +696,7 @@ int NavigateReadJoystick(int menu_length)
 	//}
 
 	//Selection is made
-	if (digitalRead(btnGreen) || SmoothingBtnJoy() == 0)
+	if (BtnJoyPush())
 	{
 
 		delay(250);
@@ -701,20 +712,20 @@ int NavigateReadJoystick(int menu_length)
 	//Move up
 	if (valueJoyY < origoY - buffer)
 	{
-		if (cursorPos - 1 > -1 &&
-			millis() - timerJoy >= joyMenuDelay)
-		{
-			cursorPos -= 1;
-			timerJoy = millis();
-		}
-	}
-	else if (valueJoyY > origoY + buffer)
-	{
 		//Move down
 		if (cursorPos + 1 < menu_length &&
 			millis() - timerJoy >= joyMenuDelay)
 		{
 			cursorPos += 1;
+			timerJoy = millis();
+		}
+	}
+	else if (valueJoyY > origoY + buffer)
+	{
+		if (cursorPos - 1 > -1 &&
+			millis() - timerJoy >= joyMenuDelay)
+		{
+			cursorPos -= 1;
 			timerJoy = millis();
 		}
 	}
@@ -735,23 +746,20 @@ int NavigateReadJoystick(int menu_length)
 // Manual Drive
 void ManualDrive()
 {
-	valueJoyX = analogRead(joyX);
+	do
+	{
 
+	valueJoyX = analogRead(joyX);
 	valueJoyY = analogRead(joyY);
 
 
 	Reading_Acceleration(2, 1000, 11000, 50);
 	Reading_Movement();
 	StepperRun();
+	} while (!BtnJoyPush());
 
 
-	//!digitalRead(btnJoy)
-	if (digitalRead(btnBlue) ||
-		SmoothingBtnJoy() == 0)
-	{
-		return;
-	}
-	ManualDrive();
+	
 }
 void Reading_Acceleration(int timer, int minAccu, int maxAccu, int addValue)
 {
@@ -762,6 +770,7 @@ void Reading_Acceleration(int timer, int minAccu, int maxAccu, int addValue)
 
 	if (valueJoyY < origoY - buffer)
 	{
+		//Decrease Accu
 		if (accelerationValue <
 			minAccu)
 		{
@@ -774,6 +783,7 @@ void Reading_Acceleration(int timer, int minAccu, int maxAccu, int addValue)
 	}
 	else if (valueJoyY > origoY + buffer)
 	{
+		//Increase Accu
 		if (accelerationValue > maxAccu)
 		{
 			accelerationValue = maxAccu;
@@ -1046,7 +1056,7 @@ void TimeLapseSetTimer()
 
 
 
-	} while (SmoothingBtnJoy() != 0);
+	} while (!BtnJoyPush());
 	delay(500);
 
 }
