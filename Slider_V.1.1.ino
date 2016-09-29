@@ -50,7 +50,7 @@
 AccelStepper stepper(1, stepPin, dirPin);
 #pragma endregion
 #pragma region LCD Declaration
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+LiquidCrystal_I2C lcd(0x3F, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
 
 #pragma endregion
 #pragma region Global Variables Declaration
