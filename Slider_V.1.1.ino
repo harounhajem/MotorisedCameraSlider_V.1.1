@@ -101,7 +101,7 @@ void setup()
 void loop()
 {
 	//ManualDrive();
-	//IntroWelcomeSequance();
+	IntroWelcomeSequance();
 	//CallibrationSequance();
 	MenuMain();
 	//TimeLapseBegin();
@@ -144,41 +144,41 @@ void IntroWelcomeSequance()
 	lcd.print("By Haron Hajem");
 	delay(1900);
 
-	lcd.clear();
-	lcd.home();
-	lcd.setCursor(3, 1);
-	lcd.print("Begin calibrate");
-	lcd.setCursor(4, 2);
-	lcd.print("Press any key");
-	bool btnResponse = false;
+	//lcd.clear();
+	//lcd.home();
+	//lcd.setCursor(3, 1);
+	//lcd.print("Begin calibrate");
+	//lcd.setCursor(4, 2);
+	//lcd.print("Press any key");
+	//bool btnResponse = false;
 
-	do
-	{
-		if (BtnJoyPush())
-		{
-			btnResponse = true;
-		}
-	} while (!btnResponse);
-
-
-	lcd.clear();
-	lcd.setCursor(0, 2);
-	lcd.print("Don't  obstruct  the");
-	lcd.setCursor(0, 3);
-	lcd.print("rails while  running");
-	for (size_t i = 0; i < 10; i++)
-	{
-		lcd.setCursor(6, 0);
-		lcd.print("WARNING!");
-		delay(500);
-		lcd.setCursor(6, 0);
-		lcd.print("         ");
-		delay(500);
-
-	}
+	//do
+	//{
+	//	if (BtnJoyPush())
+	//	{
+	//		btnResponse = true;
+	//	}
+	//} while (!btnResponse);
 
 
-	lcd.clear();
+	//lcd.clear();
+	//lcd.setCursor(0, 2);
+	//lcd.print("Don't  obstruct  the");
+	//lcd.setCursor(0, 3);
+	//lcd.print("rails while  running");
+	//for (size_t i = 0; i < 10; i++)
+	//{
+	//	lcd.setCursor(6, 0);
+	//	lcd.print("WARNING!");
+	//	delay(500);
+	//	lcd.setCursor(6, 0);
+	//	lcd.print("         ");
+	//	delay(500);
+
+	//}
+
+
+	//lcd.clear();
 
 }
 
@@ -405,20 +405,23 @@ void AutoDriveSetSpeed()
 
 }
 void AutoDriveToPositionX(int position, int maxSpeed) {
-	stepper.setAcceleration(900);
-	stepper.setMaxSpeed(maxSpeed);
-	// Move to position
-	digitalWrite(enablePin, LOW);
 	if (stepper.currentPosition() != position)
 	{
-		//stepper.moveTo(posA);
+		stepper.setAcceleration(900);
+		stepper.setMaxSpeed(maxSpeed);
+		// Move to position
+		digitalWrite(enablePin, LOW);
 		stepper.moveTo(position);
+		do
+		{
+			stepper.run();
+		} while (stepper.currentPosition() != position);
+		digitalWrite(enablePin, HIGH);
 	}
-	do
+	else
 	{
-		stepper.run();
-	} while (stepper.currentPosition() != position);
-	digitalWrite(enablePin, HIGH);
+		return;
+	}
 }
 void AutoDriveCommence()
 {
@@ -579,7 +582,7 @@ bool BtnJoyPush()
 {
 	int btnValue = analogRead(btnJoy);
 
-	if (btnValue == 0UL)
+	if (btnValue <= 200)
 	{
 		return true;
 	}
@@ -749,17 +752,17 @@ void ManualDrive()
 	do
 	{
 
-	valueJoyX = analogRead(joyX);
-	valueJoyY = analogRead(joyY);
+		valueJoyX = analogRead(joyX);
+		valueJoyY = analogRead(joyY);
 
 
-	Reading_Acceleration(2, 1000, 11000, 50);
-	Reading_Movement();
-	StepperRun();
+		Reading_Acceleration(2, 1000, 11000, 65);
+		Reading_Movement();
+		StepperRun();
 	} while (!BtnJoyPush());
 
 
-	
+
 }
 void Reading_Acceleration(int timer, int minAccu, int maxAccu, int addValue)
 {
@@ -833,7 +836,7 @@ void Reading_Movement()
 {
 	//Set stepper to MoveTo position in between MAX & MIN
 	int currentPos = stepper.currentPosition();
-	const int maxPos = 8050;
+	const int maxPos = 7109;
 	const int minPos = 0;
 
 	//Decrease value, not under min
