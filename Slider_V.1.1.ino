@@ -78,7 +78,7 @@ short speedValue = 500;
 
 void setup()
 {
-	Serial.begin(9600);
+	//Serial.begin(9600);
 
 
 	//pinMode()
@@ -445,11 +445,11 @@ void AutoDriveCommence()
 		lcd.noBlink();
 		lcd.setCursor(0, 1);
 		lcd.print("    Auto Drive");
-		AutoDriveToPositionX(posA, 2000);
+		AutoDriveToPositionX(posA, 1000);
 		delay(1500);
 		AutoDriveToPositionX(posB, speedValue);
 		delay(2500);
-		AutoDriveToPositionX(posA, 2000);
+		AutoDriveToPositionX(posA, 1000);
 
 	}
 }
