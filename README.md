@@ -4,4 +4,4 @@
 1.5meter long motorised camera slider, with a 360 joystick and a 20x4 backlit display. 
 Built with the arduino platform, at heart you find an Atmel atmega328p with a wide range of functions, like analog reading and a digital PWM.  
   
-![Motorized Slider](http://s3.amazonaws.com/ksr/assets/000/574/830/e6d510c7de615bd1769bede6ef93f231_large.jpg?1367998900)
+![Motorized Slider](http://blog.planet5d.com/wp-content/uploads/Revolve-automated-motion.jpg)
