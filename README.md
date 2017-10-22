@@ -12,4 +12,4 @@ Built with the arduino platform, at the heart you'll find an Atmel atmega328p wi
 - [x] Display feedback
 - [x] Easy in/out acceleration
 
-![Motorized Slider](http://blog.planet5d.com/wp-content/uploads/Revolve-automated-motion.jpg)
+![Motorized Slider](https://s3.amazonaws.com/ksr/assets/000/574/830/e6d510c7de615bd1769bede6ef93f231_large.jpg?1367998900)
